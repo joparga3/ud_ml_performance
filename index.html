@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Jose Parreno Garcia" />
+
+
+<title>Evluating model performance</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-1.1/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-1.1/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Measuring performance</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Measuring performance</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Evluating model performance</h1>
+<h4 class="author"><em>Jose Parreno Garcia</em></h4>
+<h4 class="date"><em>February 2018</em></h4>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#cross-validation"><span class="toc-section-number">1</span> Cross-validation</a><ul>
+<li><a href="#preparing-the-data"><span class="toc-section-number">1.1</span> Preparing the data</a></li>
+<li><a href="#estimating-model-performance-with-k-fold-cross-validation"><span class="toc-section-number">1.2</span> Estimating model performance with k-fold Cross-Validation</a></li>
+<li><a href="#performing-cros-validation-with-e1071-package"><span class="toc-section-number">1.3</span> Performing Cros-validation with e1071 package</a></li>
+<li><a href="#performing-cros-validation-with-caret-package"><span class="toc-section-number">1.4</span> Performing Cros-validation with caret package</a></li>
+</ul></li>
+<li><a href="#variable-importance"><span class="toc-section-number">2</span> Variable importance</a><ul>
+<li><a href="#with-caret-package"><span class="toc-section-number">2.1</span> With Caret package</a></li>
+<li><a href="#with-rminer-package"><span class="toc-section-number">2.2</span> With rminer package</a></li>
+</ul></li>
+<li><a href="#highly-correlated-features"><span class="toc-section-number">3</span> Highly correlated features</a></li>
+<li><a href="#feature-selection"><span class="toc-section-number">4</span> Feature selection</a></li>
+<li><a href="#measuring-performance-of-a-regression-model"><span class="toc-section-number">5</span> Measuring performance of a regression model</a></li>
+<li><a href="#measuring-performance-with-a-confusion-matrix"><span class="toc-section-number">6</span> Measuring performance with a confusion matrix</a></li>
+<li><a href="#measuring-performance-using-rocr"><span class="toc-section-number">7</span> Measuring performance using ROCR</a></li>
+<li><a href="#comparing-roc-curve"><span class="toc-section-number">8</span> Comparing ROC Curve</a></li>
+<li><a href="#measuring-performance-differences-between-models"><span class="toc-section-number">9</span> Measuring performance differences between models</a></li>
+</ul>
+</div>
+
+<style>
+body {
+text-align: justify}
+
+</style>
+<p><br></p>
+<pre class="r"><code>library(knitr)</code></pre>
+<p><br></p>
+<p>We will look at:</p>
+<ul>
+<li>Cross-validation</li>
+<li>Variable importance</li>
+<li>Feature correlation</li>
+<li>Feature selection</li>
+</ul>
+<p><br></p>
+<div id="cross-validation" class="section level1">
+<h1><span class="header-section-number">1</span> Cross-validation</h1>
+<p><img src="C:/Users/garciaj/Desktop/Websites/UDEMY_ML/udemy_measuring_performance/images/1.PNG" /><!-- --></p>
+<div id="preparing-the-data" class="section level2">
+<h2><span class="header-section-number">1.1</span> Preparing the data</h2>
+<pre class="r"><code>library(C50)
+
+data(churn)
+
+str(churnTrain)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    3333 obs. of  20 variables:
+##  $ state                        : Factor w/ 51 levels &quot;AK&quot;,&quot;AL&quot;,&quot;AR&quot;,..: 17 36 32 36 37 2 20 25 19 50 ...
+##  $ account_length               : int  128 107 137 84 75 118 121 147 117 141 ...
+##  $ area_code                    : Factor w/ 3 levels &quot;area_code_408&quot;,..: 2 2 2 1 2 3 3 2 1 2 ...
+##  $ international_plan           : Factor w/ 2 levels &quot;no&quot;,&quot;yes&quot;: 1 1 1 2 2 2 1 2 1 2 ...
+##  $ voice_mail_plan              : Factor w/ 2 levels &quot;no&quot;,&quot;yes&quot;: 2 2 1 1 1 1 2 1 1 2 ...
+##  $ number_vmail_messages        : int  25 26 0 0 0 0 24 0 0 37 ...
+##  $ total_day_minutes            : num  265 162 243 299 167 ...
+##  $ total_day_calls              : int  110 123 114 71 113 98 88 79 97 84 ...
+##  $ total_day_charge             : num  45.1 27.5 41.4 50.9 28.3 ...
+##  $ total_eve_minutes            : num  197.4 195.5 121.2 61.9 148.3 ...
+##  $ total_eve_calls              : int  99 103 110 88 122 101 108 94 80 111 ...
+##  $ total_eve_charge             : num  16.78 16.62 10.3 5.26 12.61 ...
+##  $ total_night_minutes          : num  245 254 163 197 187 ...
+##  $ total_night_calls            : int  91 103 104 89 121 118 118 96 90 97 ...
+##  $ total_night_charge           : num  11.01 11.45 7.32 8.86 8.41 ...
+##  $ total_intl_minutes           : num  10 13.7 12.2 6.6 10.1 6.3 7.5 7.1 8.7 11.2 ...
+##  $ total_intl_calls             : int  3 3 5 7 3 6 7 6 4 5 ...
+##  $ total_intl_charge            : num  2.7 3.7 3.29 1.78 2.73 1.7 2.03 1.92 2.35 3.02 ...
+##  $ number_customer_service_calls: int  1 1 0 2 3 0 3 0 1 0 ...
+##  $ churn                        : Factor w/ 2 levels &quot;yes&quot;,&quot;no&quot;: 2 2 2 2 2 2 2 2 2 2 ...</code></pre>
+<pre class="r"><code># Remove certain variables that we are not going to use
+churnTrain = churnTrain[,! names(churnTrain) %in% c(&quot;state&quot;
+                                                    , &quot;area_code&quot;
+                                                    , &quot;account_length&quot;) ]
+
+set.seed(2)
+ind = sample(2, nrow(churnTrain), replace = TRUE, prob=c(0.7,0.3))
+trainset = churnTrain[ind == 1,]
+testset = churnTrain[ind == 2,]
+
+dim(trainset)</code></pre>
+<pre><code>## [1] 2315   17</code></pre>
+<pre class="r"><code>dim(testset)</code></pre>
+<pre><code>## [1] 1018   17</code></pre>
+<pre class="r"><code>split.data = function(data, p = 0.7, s = 666){
+   set.seed(s)
+   index = sample(1:dim(data)[1])
+   train = data[index[1:floor(dim(data)[1] * p)], ]
+   test = data[index[((ceiling(dim(data)[1] * p)) + 1):dim(data)[1]], ]
+   return(list(train = train, test = test))
+   }</code></pre>
+</div>
+<div id="estimating-model-performance-with-k-fold-cross-validation" class="section level2">
+<h2><span class="header-section-number">1.2</span> Estimating model performance with k-fold Cross-Validation</h2>
+<pre class="r"><code>library(e1071)
+
+ind = cut(1:nrow(churnTrain), breaks=10, labels=F)
+
+accuracies = c()
+for (i in 1:10) {
+  fit = svm(churn ~., churnTrain[ind != i,])
+  predictions = predict(fit, churnTrain[ind == i, !names(churnTrain) %in% c(&quot;churn&quot;)])
+  correct_count = sum(predictions == churnTrain[ind ==i,c(&quot;churn&quot;)])
+  accuracies = append(correct_count / nrow(churnTrain[ind ==i,]), accuracies)
+}
+
+accuracies</code></pre>
+<pre><code>##  [1] 0.9341317 0.8948949 0.8978979 0.9459459 0.9219219 0.9281437 0.9219219 0.9249249 0.9189189 0.9251497</code></pre>
+<pre class="r"><code>mean(accuracies)</code></pre>
+<pre><code>## [1] 0.9213852</code></pre>
+<pre class="r"><code>for (i in 1:10) {
+   fit = naiveBayes(churn ~., churnTrain[ind != i,])
+   predictions = predict(fit, churnTrain[ind == i, ! names(churnTrain)
+                                          %in% c(&quot;churn&quot;)])
+   correct_count = sum(predictions == churnTrain[ind == i,c(&quot;churn&quot;)])
+   accuracies = append(correct_count / nrow(churnTrain[ind == i,]),
+                        accuracies)
+}
+
+accuracies</code></pre>
+<pre><code>##  [1] 0.8892216 0.8618619 0.8498498 0.9159159 0.8588589 0.8832335 0.8978979 0.8918919 0.8618619 0.8832335 0.9341317 0.8948949 0.8978979 0.9459459 0.9219219 0.9281437 0.9219219 0.9249249 0.9189189 0.9251497</code></pre>
+<pre class="r"><code>mean(accuracies)</code></pre>
+<pre><code>## [1] 0.9003839</code></pre>
+</div>
+<div id="performing-cros-validation-with-e1071-package" class="section level2">
+<h2><span class="header-section-number">1.3</span> Performing Cros-validation with e1071 package</h2>
+<pre class="r"><code>tuned = tune.svm(churn~., data = trainset, gamma = 10^-2, cost = 10^2,
+                 tuneControl=tune.control(cross=10))
+
+summary(tuned)</code></pre>
+<pre><code>## 
+## Error estimation of &#39;svm&#39; using 10-fold cross validation: 0.0808031</code></pre>
+<pre class="r"><code>tuned$performances</code></pre>
+<pre><code>##   gamma cost     error dispersion
+## 1  0.01  100 0.0808031 0.02367426</code></pre>
+<pre class="r"><code>svmfit = tuned$best.model
+table(trainset[,c(&quot;churn&quot;)], predict(svmfit))</code></pre>
+<pre><code>##      
+##        yes   no
+##   yes  234  108
+##   no    13 1960</code></pre>
+</div>
+<div id="performing-cros-validation-with-caret-package" class="section level2">
+<h2><span class="header-section-number">1.4</span> Performing Cros-validation with caret package</h2>
+<pre class="r"><code>library(e1071)
+library(caret)
+control = trainControl(method=&quot;repeatedcv&quot;, number=10,repeats=3)
+library(caret)
+model = train(churn~., data=trainset, method=&quot;rpart&quot;,
+              preProcess=&quot;scale&quot;, trControl=control)
+
+model</code></pre>
+<pre><code>## CART 
+## 
+## 2315 samples
+##   16 predictor
+##    2 classes: &#39;yes&#39;, &#39;no&#39; 
+## 
+## Pre-processing: scaled (16) 
+## Resampling: Cross-Validated (10 fold, repeated 3 times) 
+## Summary of sample sizes: 2084, 2083, 2084, 2084, 2084, 2082, ... 
+## Resampling results across tuning parameters:
+## 
+##   cp          Accuracy   Kappa    
+##   0.05555556  0.9010890  0.5224011
+##   0.07456140  0.8637855  0.2430835
+##   0.07602339  0.8561525  0.1676674
+## 
+## Accuracy was used to select the optimal model using  the largest value.
+## The final value used for the model was cp = 0.05555556.</code></pre>
+<p><br></p>
+</div>
+</div>
+<div id="variable-importance" class="section level1">
+<h1><span class="header-section-number">2</span> Variable importance</h1>
+<div id="with-caret-package" class="section level2">
+<h2><span class="header-section-number">2.1</span> With Caret package</h2>
+<pre class="r"><code>importance = varImp(model, scale=FALSE)
+importance</code></pre>
+<pre><code>## rpart variable importance
+## 
+##                               Overall
+## number_customer_service_calls 116.015
+## total_day_minutes             106.988
+## total_day_charge              100.648
+## international_planyes          86.789
+## voice_mail_planyes             25.974
+## total_eve_charge               23.097
+## total_eve_minutes              23.097
+## number_vmail_messages          19.885
+## total_intl_minutes              6.347
+## total_night_minutes             0.000
+## total_eve_calls                 0.000
+## total_intl_charge               0.000
+## total_day_calls                 0.000
+## total_night_calls               0.000
+## total_night_charge              0.000
+## total_intl_calls                0.000</code></pre>
+<pre class="r"><code>plot(importance)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-69-1.png" /><!-- --></p>
+<pre class="r"><code>library(rpart)
+model.rp = rpart(churn~., data=trainset)
+model.rp$variable.importance</code></pre>
+<pre><code>##             total_day_minutes              total_day_charge number_customer_service_calls            total_intl_minutes             total_intl_charge              total_eve_charge             total_eve_minutes            international_plan 
+##                    111.645286                    110.881583                     58.486651                     48.283228                     47.698379                     47.166646                     47.166646                     42.194508 
+##              total_intl_calls         number_vmail_messages               voice_mail_plan             total_night_calls               total_eve_calls            total_night_charge           total_night_minutes               total_day_calls 
+##                     36.730344                     19.884863                     19.884863                      7.195828                      3.553423                      1.754547                      1.754547                      1.494986</code></pre>
+</div>
+<div id="with-rminer-package" class="section level2">
+<h2><span class="header-section-number">2.2</span> With rminer package</h2>
+<pre class="r"><code>library(rminer)
+
+model=fit(churn~.,trainset,model=&quot;svm&quot;)
+
+VariableImportance=Importance(model,trainset,method=&quot;sensv&quot;)
+
+L=list(runs=1,sen=t(VariableImportance$imp),
+      sresponses=VariableImportance$sresponses)
+mgraph(L,graph=&quot;IMP&quot;,leg=names(trainset),col=&quot;gray&quot;,Grid=10)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-70-1.png" /><!-- --></p>
+<p><br></p>
+</div>
+</div>
+<div id="highly-correlated-features" class="section level1">
+<h1><span class="header-section-number">3</span> Highly correlated features</h1>
+<pre class="r"><code>library(caret)
+
+new_train = trainset[,! names(churnTrain) %in% c(&quot;churn&quot;,
+                            &quot;international_plan&quot;, &quot;voice_mail_plan&quot;)]  
+
+cor_mat = cor(new_train)
+
+highlyCorrelated = findCorrelation(cor_mat, cutoff=0.75)
+
+names(new_train)[highlyCorrelated]</code></pre>
+<pre><code>## [1] &quot;total_intl_minutes&quot;  &quot;total_day_charge&quot;    &quot;total_eve_minutes&quot;   &quot;total_night_minutes&quot;</code></pre>
+<p><br></p>
+</div>
+<div id="feature-selection" class="section level1">
+<h1><span class="header-section-number">4</span> Feature selection</h1>
+<pre class="r"><code>intl_plan = model.matrix(~ trainset.international_plan - 1,
+                        data=data.frame(trainset$international_plan))
+head(intl_plan)</code></pre>
+<pre><code>##   trainset.international_planno trainset.international_planyes
+## 1                             1                              0
+## 2                             1                              0
+## 3                             0                              1
+## 4                             1                              0
+## 5                             1                              0
+## 6                             0                              1</code></pre>
+<pre class="r"><code>colnames(intl_plan) = c(&quot;trainset.international_planno&quot;=&quot;intl_no&quot;, &quot;trainset.international_planyes&quot;= &quot;intl_yes&quot;)
+
+voice_plan = model.matrix(~ trainset.voice_mail_plan - 1,
+                          data=data.frame(trainset$voice_mail_plan))
+colnames(voice_plan) = c(&quot;trainset.voice_mail_planno&quot; =&quot;voice_no&quot;, &quot;trainset.voice_mail_planyes&quot;=&quot;voidce_yes&quot;)
+
+trainset$international_plan = NULL
+trainset$voice_mail_plan = NULL
+trainset = cbind(intl_plan,voice_plan, trainset)
+
+intl_plan = model.matrix(~ testset.international_plan - 1,
+                        data=data.frame(testset$international_plan))
+colnames(intl_plan) = c(&quot;testset.international_planno&quot;=&quot;intl_no&quot;, &quot;testset.international_planyes&quot;= &quot;intl_yes&quot;)
+
+voice_plan = model.matrix(~ testset.voice_mail_plan - 1,
+                          data=data.frame(testset$voice_mail_plan))
+colnames(voice_plan) = c(&quot;testset.voice_mail_planno&quot; =&quot;voice_no&quot;, &quot;testset.voice_mail_planyes&quot;=&quot;voidce_yes&quot;)
+
+testset$international_plan = NULL
+testset$voice_mail_plan = NULL
+testset = cbind(intl_plan,voice_plan, testset)
+
+ldaControl = rfeControl(functions = ldaFuncs, method = &quot;cv&quot;)
+
+ldaProfile = rfe(trainset[, !names(trainset) %in% c(&quot;churn&quot;)],
+            trainset[,c(&quot;churn&quot;)],sizes = c(1:18), rfeControl = ldaControl)</code></pre>
+<pre><code>## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear
+
+## Warning in lda.default(x, grouping, ...): variables are collinear</code></pre>
+<pre class="r"><code>ldaProfile</code></pre>
+<pre><code>## 
+## Recursive feature selection
+## 
+## Outer resampling method: Cross-Validated (10 fold) 
+## 
+## Resampling performance over subset size:
+## 
+##  Variables Accuracy  Kappa AccuracySD KappaSD Selected
+##          1   0.8523 0.0000   0.001675 0.00000         
+##          2   0.8523 0.0000   0.001675 0.00000         
+##          3   0.8406 0.1723   0.019843 0.10495         
+##          4   0.8415 0.2170   0.021206 0.08676         
+##          5   0.8484 0.2444   0.018515 0.07894         
+##          6   0.8462 0.2347   0.018762 0.07964         
+##          7   0.8445 0.2261   0.019066 0.07489         
+##          8   0.8441 0.2355   0.016525 0.07581         
+##          9   0.8462 0.2429   0.017758 0.08093         
+##         10   0.8462 0.2387   0.017522 0.07637         
+##         11   0.8475 0.2414   0.017153 0.07881         
+##         12   0.8505 0.2556   0.017902 0.08078         
+##         13   0.8510 0.2590   0.018036 0.07719         
+##         14   0.8527 0.2649   0.018844 0.08683         
+##         15   0.8505 0.2580   0.018826 0.08252         
+##         16   0.8531 0.2661   0.018044 0.08264        *
+##         17   0.8527 0.2652   0.018545 0.08284         
+##         18   0.8527 0.2653   0.018856 0.08409         
+## 
+## The top 5 variables (out of 16):
+##    total_day_charge, total_day_minutes, intl_yes, intl_no, number_customer_service_calls</code></pre>
+<pre class="r"><code>plot(ldaProfile, type = c(&quot;o&quot;, &quot;g&quot;))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-72-1.png" /><!-- --></p>
+<pre class="r"><code>ldaProfile$optVariables</code></pre>
+<pre><code>##  [1] &quot;total_day_charge&quot;              &quot;total_day_minutes&quot;             &quot;intl_yes&quot;                      &quot;intl_no&quot;                       &quot;number_customer_service_calls&quot; &quot;total_eve_charge&quot;              &quot;total_eve_minutes&quot;            
+##  [8] &quot;total_intl_calls&quot;              &quot;voice_no&quot;                      &quot;voidce_yes&quot;                    &quot;number_vmail_messages&quot;         &quot;total_intl_charge&quot;             &quot;total_intl_minutes&quot;            &quot;total_night_minutes&quot;          
+## [15] &quot;total_night_charge&quot;            &quot;total_eve_calls&quot;</code></pre>
+<pre class="r"><code>ldaProfile$fit</code></pre>
+<pre><code>## Call:
+## lda(x, y)
+## 
+## Prior probabilities of groups:
+##       yes        no 
+## 0.1477322 0.8522678 
+## 
+## Group means:
+##     total_day_charge total_day_minutes   intl_yes   intl_no number_customer_service_calls total_eve_charge total_eve_minutes total_intl_calls  voice_no voidce_yes number_vmail_messages total_intl_charge total_intl_minutes total_night_minutes
+## yes         35.00143          205.8877 0.29532164 0.7046784                      2.204678         18.16702          213.7269         4.134503 0.8333333  0.1666667              5.099415          2.899386           10.73684            205.4640
+## no          29.62402          174.2555 0.06487582 0.9351242                      1.441460         16.96789          199.6197         4.514445 0.7045109  0.2954891              8.674607          2.741343           10.15119            201.4184
+##     total_night_charge total_eve_calls
+## yes           9.245994        101.4123
+## no            9.063882         99.9478
+## 
+## Coefficients of linear discriminants:
+##                                         LD1
+## total_day_charge                0.828576451
+## total_day_minutes              -0.149786004
+## intl_yes                       -1.128603132
+## intl_no                         1.128603132
+## number_customer_service_calls  -0.420957247
+## total_eve_charge               -2.102510522
+## total_eve_minutes               0.173913788
+## total_intl_calls                0.066649995
+## voice_no                       -0.327916601
+## voidce_yes                      0.327916601
+## number_vmail_messages          -0.003474032
+## total_intl_charge               2.174043784
+## total_intl_minutes             -0.655507449
+## total_night_minutes             0.621126263
+## total_night_charge            -13.849592057
+## total_eve_calls                -0.002042648</code></pre>
+<p><br></p>
+</div>
+<div id="measuring-performance-of-a-regression-model" class="section level1">
+<h1><span class="header-section-number">5</span> Measuring performance of a regression model</h1>
+<pre class="r"><code>library(car)
+data(Quartet)
+
+plot(Quartet$x, Quartet$y3)
+lmfit = lm(Quartet$y3~Quartet$x)
+abline(lmfit, col=&quot;red&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-73-1.png" /><!-- --></p>
+<pre class="r"><code>predicted= predict(lmfit, newdata=Quartet[c(&quot;x&quot;)])
+
+actual = Quartet$y3
+rmse = (mean((predicted - actual)^2))^0.5
+rmse</code></pre>
+<pre><code>## [1] 1.118286</code></pre>
+<pre class="r"><code>mu = mean(actual)
+rse = mean((predicted - actual)^2) / mean((mu - actual)^2)
+rse</code></pre>
+<pre><code>## [1] 0.333676</code></pre>
+<pre class="r"><code>rsquare = 1 - rse
+rsquare</code></pre>
+<pre><code>## [1] 0.666324</code></pre>
+<pre class="r"><code>library(MASS)
+plot(Quartet$x, Quartet$y3)
+rlmfit = rlm(Quartet$y3~Quartet$x)
+abline(rlmfit, col=&quot;red&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-73-2.png" /><!-- --></p>
+<pre class="r"><code>predicted = predict(rlmfit, newdata=Quartet[c(&quot;x&quot;)])
+
+actual = Quartet$y3
+rmse = (mean((predicted - actual)^2))^0.5
+rmse</code></pre>
+<pre><code>## [1] 1.279045</code></pre>
+<pre class="r"><code>mu = mean(actual)
+rse =mean((predicted - actual)^2) / mean((mu - actual)^2)
+rse</code></pre>
+<pre><code>## [1] 0.4365067</code></pre>
+<pre class="r"><code>rsquare = 1 - rse
+rsquare</code></pre>
+<pre><code>## [1] 0.5634933</code></pre>
+<pre class="r"><code>tune(lm, y3~x, data = Quartet)</code></pre>
+<pre><code>## 
+## Error estimation of &#39;lm&#39; using 10-fold cross validation: 2.308766</code></pre>
+<p><br></p>
+</div>
+<div id="measuring-performance-with-a-confusion-matrix" class="section level1">
+<h1><span class="header-section-number">6</span> Measuring performance with a confusion matrix</h1>
+<pre class="r"><code>svm.model= train(churn ~ .,
+                 data = trainset,
+                 method = &quot;svmRadial&quot;)
+
+svm.pred = predict(svm.model, testset[,! names(testset) %in%
+                                        c(&quot;churn&quot;)])
+
+table(svm.pred, testset[,c(&quot;churn&quot;)])</code></pre>
+<pre><code>##         
+## svm.pred yes  no
+##      yes  77  13
+##      no   64 864</code></pre>
+<pre class="r"><code>confusionMatrix(svm.pred, testset[,c(&quot;churn&quot;)])</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction yes  no
+##        yes  77  13
+##        no   64 864
+##                                           
+##                Accuracy : 0.9244          
+##                  95% CI : (0.9064, 0.9398)
+##     No Information Rate : 0.8615          
+##     P-Value [Acc &gt; NIR] : 2.639e-10       
+##                                           
+##                   Kappa : 0.6263          
+##  Mcnemar&#39;s Test P-Value : 1.212e-08       
+##                                           
+##             Sensitivity : 0.54610         
+##             Specificity : 0.98518         
+##          Pos Pred Value : 0.85556         
+##          Neg Pred Value : 0.93103         
+##              Prevalence : 0.13851         
+##          Detection Rate : 0.07564         
+##    Detection Prevalence : 0.08841         
+##       Balanced Accuracy : 0.76564         
+##                                           
+##        &#39;Positive&#39; Class : yes             
+## </code></pre>
+<p><br></p>
+</div>
+<div id="measuring-performance-using-rocr" class="section level1">
+<h1><span class="header-section-number">7</span> Measuring performance using ROCR</h1>
+<pre class="r"><code>library(ROCR)
+
+svmfit=svm(churn~ ., data=trainset, prob=TRUE)
+
+pred=predict(svmfit,testset[, !names(testset) %in% c(&quot;churn&quot;)],
+             probability=TRUE)
+
+pred.prob = attr(pred, &quot;probabilities&quot;)
+pred.to.roc = pred.prob[, 2]
+
+pred.rocr = prediction(pred.to.roc, testset$churn)
+
+perf.rocr = performance(pred.rocr, measure = &quot;auc&quot;, x.measure =&quot;cutoff&quot;)
+perf.tpr.rocr = performance(pred.rocr, &quot;tpr&quot;,&quot;fpr&quot;)
+
+plot(perf.tpr.rocr, colorize=T,main=paste(&quot;AUC:&quot;,(perf.rocr@y.values)))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-75-1.png" /><!-- --></p>
+<p><br></p>
+</div>
+<div id="comparing-roc-curve" class="section level1">
+<h1><span class="header-section-number">8</span> Comparing ROC Curve</h1>
+<pre class="r"><code>#install.packages(&quot;pROC&quot;)
+library(&quot;pROC&quot;)
+
+library(caret)
+control = trainControl(method = &quot;repeatedcv&quot;,
+                        number = 10,
+                        repeats = 3,
+                        classProbs = TRUE,
+                        summaryFunction = twoClassSummary)
+
+glm.model= train(churn ~ .,
+                  data = trainset,
+                  method = &quot;glm&quot;,
+                  metric = &quot;ROC&quot;,
+                  trControl = control)</code></pre>
+<pre><code>## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading
+
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading</code></pre>
+<pre class="r"><code>rpart.model= train(churn ~ .,
+                   data = trainset,
+                   method = &quot;rpart&quot;,
+                   metric = &quot;ROC&quot;,
+                   trControl = control)
+                 
+glm.probs = predict(glm.model, testset[,! names(testset) %in%
+                                         c(&quot;churn&quot;)], type = &quot;prob&quot;)</code></pre>
+<pre><code>## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = ifelse(type == : prediction from a rank-deficient fit may be misleading</code></pre>
+<pre class="r"><code>rpart.probs = predict(rpart.model, testset[,! names(testset)
+                                             %in% c(&quot;churn&quot;)], type = &quot;prob&quot;) 
+
+glm.ROC = roc(response = testset[,c(&quot;churn&quot;)],
+               predictor =glm.probs$yes,
+               levels = levels(testset[,c(&quot;churn&quot;)]))
+plot(glm.ROC, type=&quot;S&quot;, col=&quot;red&quot;)
+
+
+rpart.ROC = roc(response = testset[,c(&quot;churn&quot;)],
+                 predictor =rpart.probs$yes,
+                 levels = levels(testset[,c(&quot;churn&quot;)]))
+plot(rpart.ROC, add=TRUE, col=&quot;blue&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-76-1.png" /><!-- --></p>
+<p><br></p>
+</div>
+<div id="measuring-performance-differences-between-models" class="section level1">
+<h1><span class="header-section-number">9</span> Measuring performance differences between models</h1>
+<pre class="r"><code>cv.values = resamples(list(glm = glm.model, rpart
+                           = rpart.model))
+
+summary(cv.values)</code></pre>
+<pre><code>## 
+## Call:
+## summary.resamples(object = cv.values)
+## 
+## Models: glm, rpart 
+## Number of resamples: 30 
+## 
+## ROC 
+##            Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA&#39;s
+## glm   0.7414068 0.7868084 0.8122872 0.8118772 0.8402711 0.9106782    0
+## rpart 0.6419144 0.6986086 0.7384294 0.7426766 0.7856004 0.8499703    0
+## 
+## Sens 
+##            Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA&#39;s
+## glm   0.1142857 0.1764706 0.2172269 0.2222409 0.2647059 0.3823529    0
+## rpart 0.2647059 0.3823529 0.4285714 0.4456863 0.5220588 0.6764706    0
+## 
+## Spec 
+##            Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA&#39;s
+## glm   0.9543147 0.9657360 0.9695431 0.9716138 0.9797723 0.9898477    0
+## rpart 0.9593909 0.9709275 0.9796954 0.9787084 0.9885979 1.0000000    0</code></pre>
+<pre class="r"><code>dotplot(cv.values, metric = &quot;ROC&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-77-1.png" /><!-- --></p>
+<pre class="r"><code>bwplot(cv.values, layout = c(3, 1))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-77-2.png" /><!-- --></p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
